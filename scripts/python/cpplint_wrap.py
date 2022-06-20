@@ -27,11 +27,9 @@ def main():
 
 def write_code_lines(filename):
     with open(filename, 'r') as f:
-        linenum = 1
-        for line in f:
-            if (not '// by md-split' in line):
+        for linenum, line in enumerate(f, start=1):
+            if '// by md-split' not in line:
                 sys.stdout.write('%3d  %s' % (linenum, line))
-            linenum += 1
 
 if __name__ == '__main__':
   main()
