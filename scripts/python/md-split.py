@@ -103,23 +103,25 @@ def process_code(read_filehandle, text_filehandle, line, linenum, sourcefile, co
             # write empty line so line numbers stay stable
             text_filehandle.write('\n')
 
-        if (not has_actual_code
+        if (
+            not has_actual_code
             and not line.strip().startswith('//')
             and not line.strip().startswith('???')
-            and not line.strip() == ''):
+            and line.strip() != ''
+        ):
             has_actual_code = True
 
-        if (not line.strip() == '```'):
-            if ('???' == no_comment_line or '...' == no_comment_line):
+        if line.strip() != '```':
+            if no_comment_line in ['???', '...']:
                 has_question_marks = True
-            linebuffer.append(dedent(line, indent_depth) if not fenced else line)
+            linebuffer.append(line if fenced else dedent(line, indent_depth))
         try:
             line = read_filehandle.readline()
             linenum += 1
         except StopIteration:
             line = ''
             break
-    codefile = os.path.join(codedir, '%s%s.cpp' % (name, index))
+    codefile = os.path.join(codedir, f'{name}{index}.cpp')
     if fenced:
         text_filehandle.write('\n')
 
@@ -192,16 +194,14 @@ def dedent(line, indent_depth):
     return line
 
 def get_marker(line):
-    matchlist = TAG_REGEX.findall(line)
-    if matchlist:
-        namematch = NAMED_A_TAG_REGEX.match(line)
-        if namematch:
+    if matchlist := TAG_REGEX.findall(line):
+        if namematch := NAMED_A_TAG_REGEX.match(line):
             return namematch.group(1) # group 0 is full match
 
     return None
 
 def line_length(filename):
-    return sum(1 for line in open(filename))
+    return sum(1 for _ in open(filename))
 
 if __name__ == '__main__':
     main()
